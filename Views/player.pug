@@ -1,0 +1,394 @@
+extends layout
+
+block layout-content
+  h1.page-title NBA Players
+
+  .button-container
+    button(onclick="filterPlayers('All')") All
+    button(onclick="filterPlayers('PG')") PG
+    button(onclick="filterPlayers('SG')") SG
+    button(onclick="filterPlayers('SF')") SF
+    button(onclick="filterPlayers('PF')") PF
+    button(onclick="filterPlayers('C')") C
+
+  button(onclick="showSelectedPlayers()") Team
+
+  each p in player
+    - let sum = Number(p.stats.pts) + Number(p.stats.reb) + Number(p.stats.ast) + Number(p.stats.blk) + Number(p.stats.stl)
+    if p.pos && !isNaN(sum)
+      .Player(data-pos=p.pos)
+        h2 #{p.espnName}
+        img(src=p.espnHeadshot)
+        p #{p.pos}
+        p(data-stat="TotalSum" class="sum") Total Sum: #{sum}
+
+        button(onclick="selectPlayer('#{p.espnName}', this)") Select
+
+
+
+  .selected-players(class=currentPlayer === 'playerOne' ? 'playerOne' : 'playerTwo')
+    h2 Selected Players
+
+  .scroll-buttons
+    button(onclick="scrollToTop()") &#8593;
+    button(onclick="scrollToBottom()") &#8595;
+
+  button.face-off-button(onclick="faceOff()") Face Off
+
+  script.
+    var selectedPlayers = {
+      playerOne: {
+        PG: null,
+        SG: null,
+        SF: null,
+        PF: null,
+        C: null
+      },
+      playerTwo: {
+        PG: null,
+        SG: null,
+        SF: null,
+        PF: null,
+        C: null
+      }
+    };
+
+
+    var currentPlayer = 'playerOne';
+
+    function filterPlayers(position) {
+      var players = document.getElementsByClassName('Player');
+      for (var i = 0; i < players.length; i++) {
+        var playerPosition = players[i].getAttribute('data-pos');
+
+        if (playerPosition === position || (position === 'All' && playerPosition)) {
+          players[i].style.display = 'block';
+        } else {
+          players[i].style.display = 'none';
+        }
+      }
+    }
+
+    function selectPlayer(playerName, button) {
+      var position = button.parentElement.getAttribute('data-pos');
+      var currentPlayerData = selectedPlayers[currentPlayer];
+
+      if (currentPlayerData[position] !== null) {
+        // Deselect the previously selected player
+        var prevPlayer = currentPlayerData[position];
+        var prevButton = prevPlayer.element.querySelector('button');
+        prevButton.textContent = 'Select';
+        prevButton.style.backgroundColor = 'orange';
+
+        // Reset the previously selected player in the data object
+        currentPlayerData[position] = null;
+      }
+
+      currentPlayerData[position] = {
+        element: button.parentElement,
+        team: currentPlayer 
+      };
+
+      button.textContent = 'Selected';
+      if (currentPlayer === 'playerOne') {
+        button.style.backgroundColor = 'red';
+      } else {
+        button.style.backgroundColor = 'blue';
+      }
+
+      var count = 0;
+      for (var pos in currentPlayerData) {
+        if (currentPlayerData[pos] !== null) {
+          count++;
+        }
+      }
+
+      if (count === 5) {
+        if (currentPlayer === 'playerOne') {
+          currentPlayer = 'playerTwo';
+          showPlayerTurnPopup("Player Two's Turn");
+        } else {
+          showSelectedPlayers();
+          document.querySelector('.face-off-button').style.display = 'block';
+        }
+      }
+    }
+
+    function faceOff() {
+    }
+
+    function showPlayerTurnPopup(message) {
+      var popup = document.createElement('div');
+      popup.className = 'popup';
+      popup.textContent = message;
+      document.body.appendChild(popup);
+
+      setTimeout(function() {
+        popup.style.opacity = '1';
+        popup.style.transform = 'translate(-50%, -50%) scale(1)';
+      }, 100);
+
+      setTimeout(function() {
+        popup.style.opacity = '0';
+        popup.style.transform = 'translate(-50%, -50%) scale(0)';
+        setTimeout(function() {
+          popup.parentNode.removeChild(popup);
+        }, 300);
+      }, 2000);
+    }
+
+    function showSelectedPlayers() {
+      var selectedPlayersContainer = document.querySelector('.selected-players');
+      selectedPlayersContainer.innerHTML = '';
+
+      var teamOneContainer = document.createElement('div');
+      teamOneContainer.className = 'team-container';
+      teamOneContainer.innerHTML = '<h2>Team One</h2>';
+      selectedPlayersContainer.appendChild(teamOneContainer);
+
+      var teamTwoContainer = document.createElement('div');
+      teamTwoContainer.className = 'team-container';
+      teamTwoContainer.innerHTML = '<h2>Team Two</h2>';
+      selectedPlayersContainer.appendChild(teamTwoContainer);
+
+      for (var playerKey in selectedPlayers) {
+        var player = selectedPlayers[playerKey];
+
+        for (var position in player) {
+          var currentPlayer = player[position];
+
+          if (currentPlayer !== null) {
+            var playerName = currentPlayer.element.querySelector('h2').textContent;
+            var playerPosition = currentPlayer.element.querySelector('p').textContent;
+            var playerImageSrc = currentPlayer.element.querySelector('img').getAttribute('src');
+            var playerTeam = currentPlayer.team === 'playerOne' ? teamOneContainer : teamTwoContainer; 
+            var playerElement = document.createElement('div');
+            playerElement.className = 'Player';
+            playerElement.setAttribute('data-pos', playerPosition);
+
+            var playerImageElement = document.createElement('img');
+            playerImageElement.src = playerImageSrc;
+            playerImageElement.alt = playerName;
+
+            var playerNameElement = document.createElement('h2');
+            playerNameElement.textContent = playerName;
+
+            var positionElement = document.createElement('p');
+            positionElement.textContent = playerPosition;
+
+            playerElement.appendChild(playerImageElement);
+            playerElement.appendChild(playerNameElement);
+            playerElement.appendChild(positionElement);
+
+            playerTeam.appendChild(playerElement);
+          }
+        }
+      }
+
+      selectedPlayersContainer.classList.add(currentPlayer === 'playerOne' ? 'playerOne' : 'playerTwo');
+    }
+
+
+
+    function scrollToTop() {
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    }
+
+    function scrollToBottom() {
+      window.scrollTo({
+        top: document.documentElement.scrollHeight,
+        behavior: 'smooth'
+      });
+    }
+
+    function faceOff() {
+      var teamOneSum = calculateTotalSum(selectedPlayers.playerOne);
+      var teamTwoSum = calculateTotalSum(selectedPlayers.playerTwo);
+
+      var winner;
+      if (teamOneSum > teamTwoSum) {
+        winner = 'Team One';
+      } else if (teamOneSum < teamTwoSum) {
+        winner = 'Team Two';
+      } else {
+        if (teamOneSum === 0 && teamTwoSum === 0) {
+          winner = 'No teams selected';
+        } else {
+          winner = 'Tie - Total Sum: ' + teamOneSum;
+        }
+      }
+
+      showWinnerPopup(winner);
+    }
+
+
+    function calculateTotalSum(team) {
+      var totalSum = 0;
+      for (var position in team) {
+        var playerData = team[position];
+        if (playerData !== null) {
+          var sumElement = playerData.element.querySelector('p[data-stat="TotalSum"]');
+          if (sumElement) {
+            var sum = Number(sumElement.textContent.split(': ')[1]);
+            totalSum += sum;
+          }
+        }
+      }
+      return totalSum;
+    }
+
+    function showWinnerPopup(winner) {
+      var teamOneSum = calculateTotalSum(selectedPlayers.playerOne);
+      var teamTwoSum = calculateTotalSum(selectedPlayers.playerTwo);
+
+      var popup = document.createElement('div');
+      popup.className = 'popup';
+      popup.innerHTML = '<div>Winner: ' + winner + '</div><div>Team One: ' + teamOneSum + '</div><div>Team Two: ' + teamTwoSum + '</div>';
+      document.body.appendChild(popup);
+
+      setTimeout(function() {
+        popup.style.opacity = '1';
+        popup.style.transform = 'translate(-50%, -50%) scale(1)';
+      }, 100);
+
+      setTimeout(function() {
+        popup.style.opacity = '0';
+        popup.style.transform = 'translate(-50%, -50%) scale(0)';
+        setTimeout(function() {
+          popup.parentNode.removeChild(popup);
+        }, 300);
+      }, 10000);
+    }
+
+  style.
+    .page-title {
+      font-size: 24px;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .button-container {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+
+    button {
+      margin: 0 5px;
+      padding: 10px 15px;
+      font-size: 16px;
+      background-color: #2196F3;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .Player {
+      display: block;
+      margin-bottom: 20px;
+      border: 1px solid #ccc;
+      padding: 10px;
+      border-radius: 4px;
+    }
+
+    .Player h2 {
+      font-size: 20px;
+      margin-bottom: 10px;
+    }
+
+    .Player img {
+      width: 100px;
+      height: 100px;
+      object-fit: cover;
+      margin-bottom: 10px;
+    }
+
+    .Player p {
+      font-size: 16px;
+      margin-bottom: 10px;
+    }
+
+    .Player button {
+      display: block;
+      margin-top: 10px;
+      padding: 8px 12px;
+      font-size: 14px;
+      background-color: orange;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .selected-players {
+      margin-top: 20px;
+      border: 1px solid #ccc;
+      padding: 10px;
+      border-radius: 4px;
+    }
+
+    .scroll-buttons {
+      position: fixed;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .scroll-buttons button {
+      margin-bottom: 10px;
+    }
+
+    .popup {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0);
+      background-color: rgba(0, 0, 0, 0.7);
+      color: #fff;
+      padding: 20px;
+      border-radius: 4px;
+      font-size: 24px;
+      text-align: center;
+      opacity: 0;
+      transition: opacity 0.3s ease, transform 0.3s ease;
+      z-index: 9999;
+    }
+
+    .selected-players {
+      margin-top: 20px;
+      border: 1px solid #ccc;
+      padding: 10px;
+      border-radius: 4px;
+    }
+
+    .face-off-button {
+      display: none;
+      margin-top: 20px;
+    }
+
+    .sum{
+      display: none;
+    }
+
+    .team-container {
+      width: 50%;
+      float: left;
+    }
+
+    .team-container h2 {
+      text-align: center;
+    }
+
+    .selected-players::after {
+      content: '';
+      display: table;
+      clear: both;
+    }

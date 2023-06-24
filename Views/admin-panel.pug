@@ -1,0 +1,76 @@
+doctype html
+html
+  head
+    title= title
+  body
+    h1 Admin Panel
+    .add-form
+      form(action="/add-faq", method="POST")
+        label(for="question") Question:
+        input(type="text", name="question")
+        br
+        label(for="answer") Answer:
+        textarea(name="answer")
+        br
+        input(type="submit", value="Add FAQ")
+
+    .add-form
+      form(action="/add-rule", method="POST")
+        label(for="number") Rule Number:
+        input(type="text", name="number")
+        br
+        label(for="content") Rule Content:
+        textarea(name="content")
+        br
+        input(type="submit", value="Add Rule")
+
+
+  style.
+
+    html{
+      background-color: lightgreen;
+    }
+
+    h1 {
+      color: black;
+      text-align: center;
+      margin-top: 20px;
+    }
+    
+    .add-form {
+      max-width: 400px;
+      margin: 20px auto;
+      padding: 20px;
+      background-color: #ffffff;
+      border: 8px solid black;
+      border-radius: 5px;
+    }
+    
+    form label {
+      display: block;
+      margin-bottom: 10px;
+      font-weight: bold;
+    }
+    
+    form input[type="text"],
+    form textarea {
+      width: 100%;
+      padding: 5px;
+      border: 1px solid #cccccc;
+      border-radius: 3px;
+      resize: vertical;
+    }
+    
+    form input[type="submit"] {
+      margin-top: 10px;
+      padding: 10px 20px;
+      background-color: #333333;
+      color: #ffffff;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+    
+    form input[type="submit"]:hover {
+      background-color: #555555;
+    }

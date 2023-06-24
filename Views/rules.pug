@@ -1,0 +1,44 @@
+extends layout
+
+block layout-content
+  .background 
+    img.image(src="images/pngtree-a-man-explains-list-of-rule-guidelines-png-image_6212794.png")
+    .rule-set 
+      each rule in rulesList
+        .rule-item 
+          p.sentence 
+            strong #{rule.number}. 
+            | #{rule.content}
+          if user && user.role === "admin"
+            a.btn-edit(href=`/edit-rule/${rule.number}`) Edit
+            form(action=`/delete-rule/${rule.number}`, method="POST" style="display: inline;")
+              button.btn-delete(type="submit") Delete
+
+
+  style.
+    .rule-item {
+      margin-bottom: 10px;
+    }
+
+    .btn-edit, .btn-delete {
+      display: inline-block;
+      padding: 5px 10px;
+      font-size: 14px;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    .btn-edit {
+      background-color: #2196f3;
+    }
+
+    .btn-delete {
+      background-color: #f44336;
+    }
+
+    .btn-edit:hover, .btn-delete:hover {
+      opacity: 0.8;
+    }

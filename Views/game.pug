@@ -1,0 +1,57 @@
+extends layout
+
+block layout-content
+  .game-description
+    h1 Welcome to the NBA GM Game!
+    p The NBA GM Game is an exciting basketball management simulation where you get to test your skills as a General Manager. In this game, you will have the opportunity to assemble your dream team by selecting five players from the NBA. Your goal is to build a championship-winning roster and lead your team to victory!
+    a(href="/player")
+      button.btn-start Start!
+
+  .game-images
+    img(src="images/nba-logo-png-transparent.png")
+    img(src="images/NBA-playoffs-bracket.jpg")
+
+  style.
+    .game-description {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .game-description h1 {
+      font-size: 32px;
+      color: #333;
+    }
+
+    .game-description p {
+      font-size: 18px;
+      color: #666;
+      margin-top: 20px;
+    }
+
+    .btn-start {
+      padding: 10px 20px;
+      background-color: orange;
+      color: black;
+      font-size: 16px;
+      border: none;
+      border-radius: 5px;
+    }
+
+    .btn-start:hover {
+      background-color: orange;
+      color: black
+      cursor: pointer;
+      border: 1px solid black
+    }
+
+    .game-images {
+      display: flex;
+      justify-content: center;
+      margin-top: 40px;
+    }
+
+    .game-images img {
+      margin: 0 10px;
+      max-width: 400px;
+      height: auto;
+    }
